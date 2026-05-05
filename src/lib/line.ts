@@ -49,7 +49,8 @@ const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const phonePattern = /(?<!\d)(?:\+81[-\s]?)?(?:0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4})(?!\d)/g;
 const urlPattern = /https?:\/\/[^\s]+/gi;
 const socialPattern = /@[A-Za-z0-9_.]{3,32}\b/g;
-const placePattern = /\b(?:渋谷|新宿|池袋|原宿|横浜|品川|東京|大阪|京都|名古屋)\b/g;
+const placePattern = /(?:渋谷|新宿|池袋|原宿|横浜|品川|東京|大阪|京都|名古屋|[\p{Script=Han}\p{Script=Katakana}A-Za-z0-9]{1,6}(?:駅|県|市|区|町|村|公園|ランド))/gu;
+const nameSuffixPattern = /(?<!たく|みな|おじ|おば|お母|お父|兄|姉|妹|弟|奥|富士|炭|店)(?:[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}A-Za-z0-9]{1,6})(?:くん|ちゃん|さん)/gu;
 const schoolPattern = /\b[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}A-Za-z0-9]+(?:高校|大学|専門学校|学園)\b/gu;
 const orgPattern = /\b[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}A-Za-z0-9]+(?:株式会社|有限会社|店|カフェ|バイト|社)\b/gu;
 
@@ -273,6 +274,7 @@ export function anonymizeLineText(
   pushMatches(matches, text, placePattern, "place", () => "[地名]");
   pushMatches(matches, text, schoolPattern, "school", () => "[学校名]");
   pushMatches(matches, text, orgPattern, "org", () => "[組織名]");
+  pushMatches(matches, text, nameSuffixPattern, "name", () => "[人物]");
 
   for (const [name, replacement] of Object.entries(replacements)) {
     pushMatches(matches, text, buildNamePattern(name), "name", () => replacement);
