@@ -1,3 +1,5 @@
+import placesData from "./places.json";
+
 export type RiskKind =
   | "url"
   | "payment"
@@ -53,6 +55,8 @@ const placePattern = /(?:渋谷|新宿|池袋|原宿|横浜|品川|東京|大阪
 const nameSuffixPattern = /(?<!たく|みな|おじ|おば|お母|お父|兄|姉|妹|弟|奥|富士|炭|店)(?:[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}A-Za-z0-9]{1,6})(?:くん|ちゃん|さん)/gu;
 const schoolPattern = /\b[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}A-Za-z0-9]+(?:高校|大学|専門学校|学園)\b/gu;
 const orgPattern = /\b[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}A-Za-z0-9]+(?:株式会社|有限会社|店|カフェ|バイト|社)\b/gu;
+
+const openDataPlacePattern = new RegExp(`(?:${placesData.join("|")})`, "g");
 
 const paymentHosts = ["pay.paypay.ne.jp", "qr.paypay.ne.jp"];
 const sharedLinkHosts = ["line.me", "lin.ee", "docs.google.com", "forms.gle", "gift.line.me"];
@@ -272,6 +276,7 @@ export function anonymizeLineText(
   pushMatches(matches, text, phonePattern, "phone", () => "[電話番号]");
   pushMatches(matches, text, socialPattern, "social", () => "[SNSアカウント]");
   pushMatches(matches, text, placePattern, "place", () => "[地名]");
+  pushMatches(matches, text, openDataPlacePattern, "place", () => "[地名]");
   pushMatches(matches, text, schoolPattern, "school", () => "[学校名]");
   pushMatches(matches, text, orgPattern, "org", () => "[組織名]");
   pushMatches(matches, text, nameSuffixPattern, "name", () => "[人物]");
