@@ -10,15 +10,15 @@ type AnalysisResult = {
   sections: Array<{ title: string; body: string }>;
 };
 
-const SAMPLE_TEXT = `[LINE] 田中さんとのトーク履歴
+const SAMPLE_TEXT = `[LINE] 山田 太郎さんとのトーク履歴
 保存日時：2026/05/05 20:40
 2026/05/04(日)
-19:10 自分 今日はありがとう！
-19:12 田中さん こちらこそ〜 また渋谷でごはん行こ
-19:14 自分 うれしい、来週どう？
-19:16 田中さん これ送るね https://pay.paypay.ne.jp/example
-19:18 自分 了解！連絡は test@example.com にもらえる？
-19:20 田中さん 080-1234-5678 でも大丈夫`;
+19:10\t自分\t今日はありがとう！
+19:12\t山田 太郎さん\tこちらこそ〜 また渋谷でごはん行こ
+19:14\t自分\tうれしい、来週どう？
+19:16\t山田 太郎さん\tこれ送るね https://pay.paypay.ne.jp/example
+19:18\t自分\t了解！連絡は test@example.com にもらえる？
+19:20\t山田 太郎さん\t080-1234-5678 でも大丈夫`;
 
 function HighlightedText({ text, risks }: { text: string; risks: RiskMatch[] }) {
   const segments = useMemo(() => highlightText(text, risks), [text, risks]);

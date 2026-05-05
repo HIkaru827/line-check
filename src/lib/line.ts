@@ -41,7 +41,8 @@ export type AnonymizeResult = {
   replacements: Record<string, string>;
 };
 
-const messagePattern = /^(\d{1,2}:\d{2})\s+(.+?)\s{1,}(.+)$/;
+const spaceMessagePattern = /^(\d{1,2}:\d{2})\s+(.+?)\s{1,}(.+)$/;
+const tabMessagePattern = /^(\d{1,2}:\d{2})\t([^\t]+)\t(.*)$/;
 const datePattern = /^\d{4}\/\d{2}\/\d{2}\(.+\)$/;
 const titlePattern = /^\[LINE\]\s+(.+?)とのトーク履歴$/;
 const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
@@ -90,7 +91,7 @@ export function parseLineHistory(text: string): ParseResult {
       continue;
     }
 
-    const messageMatch = line.match(messagePattern);
+    const messageMatch = line.match(tabMessagePattern) || line.match(spaceMessagePattern);
     if (messageMatch) {
       const [, time, sender, body] = messageMatch;
       participants.add(sender.trim());
