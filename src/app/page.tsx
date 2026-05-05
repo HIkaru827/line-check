@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useMemo, useState, useTransition } from "react";
-import { anonymizeLineText, highlightText, type RiskMatch } from "@/lib/line";
+import { anonymizeLineText } from "@/lib/line";
 
 type AnalysisType = "mood" | "intimacy" | "reply";
 
@@ -19,24 +19,6 @@ const SAMPLE_TEXT = `[LINE] 山田 太郎さんとのトーク履歴
 19:16\t山田 太郎さん\tこれ送るね https://pay.paypay.ne.jp/example
 19:18\t自分\t了解！連絡は test@example.com にもらえる？
 19:20\t山田 太郎さん\t080-1234-5678 でも大丈夫`;
-
-function HighlightedText({ text, risks }: { text: string; risks: RiskMatch[] }) {
-  const segments = useMemo(() => highlightText(text, risks), [text, risks]);
-
-  return (
-    <div className="text-surface">
-      {segments.map((segment) =>
-        segment.kind ? (
-          <mark key={segment.id} className={`highlight highlight-${segment.kind}`}>
-            {segment.text}
-          </mark>
-        ) : (
-          <span key={segment.id}>{segment.text}</span>
-        ),
-      )}
-    </div>
-  );
-}
 
 export default function Home() {
   const [rawText, setRawText] = useState(SAMPLE_TEXT);
@@ -157,33 +139,6 @@ export default function Home() {
               <strong>{anonymized.risks.length}</strong>
             </div>
           </div>
-        </section>
-
-        <section className="panel">
-          <h2>2. 危険情報ハイライト</h2>
-          <p>URLや連絡先は赤、名前は黄、地名や学校名らしきものはオレンジで表示します。</p>
-          <div style={{ marginTop: 16 }}>
-            <HighlightedText text={rawText} risks={anonymized.risks} />
-          </div>
-        </section>
-
-        <section className="panel">
-          <h2>3. 匿名化前後の比較</h2>
-          <p>右側はそのまま編集できます。AIに送られるのは右側のテキストだけです。</p>
-          <div className="compare" style={{ marginTop: 16 }}>
-            <div>
-              <h3>匿名化前</h3>
-              <HighlightedText text={rawText} risks={anonymized.risks} />
-            </div>
-            <div>
-              <h3>匿名化後</h3>
-              <textarea
-                className="editor"
-                value={outputText}
-                onChange={(event) => setEditedText(event.target.value)}
-              />
-            </div>
-          </div>
           <div className="field-row" style={{ marginTop: 16 }}>
             <button className="button" onClick={handleCopy} type="button">
               匿名化済みテキストをコピー
@@ -193,28 +148,7 @@ export default function Home() {
         </section>
 
         <section className="panel">
-          <h2>4. 検出された危険情報一覧</h2>
-          <div className="risk-list" style={{ marginTop: 16 }}>
-            {anonymized.risks.length === 0 ? (
-              <div className="risk-item">
-                <span>危険情報は検出されませんでした。</span>
-              </div>
-            ) : (
-              anonymized.risks.map((risk) => (
-                <div className="risk-item" key={risk.id}>
-                  <div>
-                    <div className="risk-kind">{risk.label}</div>
-                    <code>{risk.value}</code>
-                  </div>
-                  <div className="meta">→ {risk.replacement}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
-
-        <section className="panel">
-          <h2>5. AI分析</h2>
+          <h2>2. AI分析</h2>
           <p>匿名化後のテキストのみAIに送信されます。消し漏れがないか確認してから実行してください。</p>
           <div className="analysis-box" style={{ marginTop: 16 }}>
             <div className="select">
