@@ -9,13 +9,25 @@ async function main() {
   const places = new Set();
   const excludeList = new Set([
     "中央", "港", "南", "北", "西", "東", "緑", "森", "旭", "栄", "泉", "中",
-    "さくら", "平和", "白鳥", "富士", "三芳", "美浜"
+    "さくら", "平和", "白鳥", "富士", "三芳", "美浜", "い", "な", "の", "か", "し", "て"
   ]); // 一般名詞と被りやすい地名を除外
+
+  // ひらがな・カタカナのみで構成されているか判定
+  const isKanaOnly = (str) => /^[\u3040-\u309F\u30A0-\u30FF]+$/.test(str);
+
+  const addPlace = (name) => {
+    if (!name || name.trim().length === 0) return;
+    // 1文字のひらがな/カタカナは完全除外
+    if (name.length === 1 && isKanaOnly(name)) return;
+    if (!excludeList.has(name)) {
+      places.add(name);
+    }
+  };
 
   console.log('1. Geolonia APIから市区町村を取得中...');
   const addrData = await fetchJson('https://raw.githubusercontent.com/geolonia/japanese-addresses/master/api/ja.json');
   for (const [pref, cities] of Object.entries(addrData)) {
-    places.add(pref.replace(/[都道府]$/, '').replace(/県$/, ''));
+    addPlace(pref.replace(/[都道府]$/, '').replace(/県$/, ''));
     for (const city of cities) {
       let name = city;
       // 郡などの場合は除外（例: 余市郡余市町 -> 余市町）
@@ -23,9 +35,7 @@ async function main() {
       if (match) name = match[1];
       
       const raw = name.replace(/(市|区|町|村)$/, '');
-      if (raw.length >= 2 && !excludeList.has(raw)) {
-        places.add(raw);
-      }
+      addPlace(raw);
     }
   }
   
@@ -42,10 +52,7 @@ async function main() {
         const stationData = await fetchJson(`http://express.heartrails.com/api/json?method=getStations&line=${encodeURIComponent(line)}`);
         const stations = stationData.response.station;
         for (const station of stations) {
-          const sName = station.name;
-          if (sName.length >= 2 && !excludeList.has(sName)) {
-            places.add(sName);
-          }
+          addPlace(station.name);
         }
       }
       process.stdout.write('.'); // 進捗表示
@@ -55,12 +62,24 @@ async function main() {
     console.warn('\n駅名の取得中にエラーが発生しました（一部のみの取得になります）。', e.message);
   }
 
-  const placesArray = Array.from(places).sort((a, b) => b.length - a.length);
+  const strictPlaces = [];
+  const safePlaces = [];
+
+  for (const p of places) {
+    if (p.length <= 2 || isKanaOnly(p)) {
+      strictPlaces.push(p);
+    } else {
+      safePlaces.push(p);
+    }
+  }
+
+  strictPlaces.sort((a, b) => b.length - a.length);
+  safePlaces.sort((a, b) => b.length - a.length);
   
   await fs.mkdir('src/lib', { recursive: true });
-  await fs.writeFile('src/lib/places.json', JSON.stringify(placesArray, null, 2));
+  await fs.writeFile('src/lib/places.json', JSON.stringify({ strict: strictPlaces, safe: safePlaces }, null, 2));
   
-  console.log(`合計 ${placesArray.length} 件の地名・駅名データを src/lib/places.json に保存しました！`);
+  console.log(`合計 ${places.size} 件 (安全: ${safePlaces.length}, 要文脈: ${strictPlaces.length}) の地名データを src/lib/places.json に保存しました！`);
 }
 
 main().catch(console.error);
