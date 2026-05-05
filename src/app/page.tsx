@@ -78,6 +78,8 @@ function ExpandableSection({ children, maxHeight = 160 }: { children: React.Reac
 export default function Home() {
   const [rawText, setRawText] = useState(SAMPLE_TEXT);
   const [editedText, setEditedText] = useState("");
+  const [selfName, setSelfName] = useState("");
+  const [partnerName, setPartnerName] = useState("");
   const [analysisType, setAnalysisType] = useState<AnalysisType>("mood");
   const [confirmed, setConfirmed] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
@@ -85,7 +87,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const anonymized = useMemo(() => anonymizeLineText(rawText), [rawText]);
+  const anonymized = useMemo(
+    () => anonymizeLineText(rawText, { self: selfName, partner: partnerName }),
+    [rawText, selfName, partnerName],
+  );
   const outputText = editedText || anonymized.anonymizedText;
 
   const messageCount = anonymized.parsed.messages.filter((item) => item.type === "message").length;
@@ -178,6 +183,34 @@ export default function Home() {
             </div>
             <div className="meta">
               対応形式: LINEエクスポートの `.txt` / 上限 2MB / ブラウザ上で読み取り
+            </div>
+          </div>
+
+          <div className="upload-box" style={{ marginTop: 16 }}>
+            <p className="meta" style={{ margin: "0 0 4px 0" }}>
+              自動で消えきらない場合は、ここで手動指定できます（本文中の同じ文字も置換されます）。
+            </p>
+            <div className="field-row">
+              <label style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "14px" }}>
+                自分の名前:
+                <input 
+                  type="text" 
+                  value={selfName} 
+                  onChange={(e) => setSelfName(e.target.value)} 
+                  placeholder="例: たろう"
+                  style={{ padding: "6px 12px", borderRadius: "8px", border: "1px solid var(--line)" }}
+                />
+              </label>
+              <label style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "14px" }}>
+                相手の名前:
+                <input 
+                  type="text" 
+                  value={partnerName} 
+                  onChange={(e) => setPartnerName(e.target.value)} 
+                  placeholder="例: はなこ"
+                  style={{ padding: "6px 12px", borderRadius: "8px", border: "1px solid var(--line)" }}
+                />
+              </label>
             </div>
           </div>
           <div className="stats" style={{ marginTop: 18 }}>

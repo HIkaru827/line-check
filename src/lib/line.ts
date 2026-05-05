@@ -251,10 +251,20 @@ function dedupeAndSort(matches: RiskMatch[]) {
   return result;
 }
 
-export function anonymizeLineText(text: string): AnonymizeResult {
+export function anonymizeLineText(
+  text: string,
+  customNames?: { self?: string; partner?: string }
+): AnonymizeResult {
   const parsed = parseLineHistory(text);
   const matches: RiskMatch[] = [];
   const replacements = Object.fromEntries(resolveParticipantReplacements(parsed));
+
+  if (customNames?.self && customNames.self.trim() !== "") {
+    replacements[customNames.self.trim()] = "自分";
+  }
+  if (customNames?.partner && customNames.partner.trim() !== "") {
+    replacements[customNames.partner.trim()] = "相手A";
+  }
 
   collectUrlMatches(text, matches);
   pushMatches(matches, text, emailPattern, "email", () => "[メールアドレス]");
