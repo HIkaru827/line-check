@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useMemo, useState, useTransition } from "react";
-import { anonymizeLineText } from "@/lib/line";
+import { anonymizeLineText, highlightText, type RiskMatch } from "@/lib/line";
 
 type AnalysisType = "mood" | "intimacy" | "reply";
 
@@ -19,6 +19,61 @@ const SAMPLE_TEXT = `[LINE] 山田 太郎さんとのトーク履歴
 19:16\t山田 太郎さん\tこれ送るね https://pay.paypay.ne.jp/example
 19:18\t自分\t了解！連絡は test@example.com にもらえる？
 19:20\t山田 太郎さん\t080-1234-5678 でも大丈夫`;
+
+function HighlightedText({ text, risks }: { text: string; risks: RiskMatch[] }) {
+  const segments = useMemo(() => highlightText(text, risks), [text, risks]);
+
+  return (
+    <div className="text-surface">
+      {segments.map((segment) =>
+        segment.kind ? (
+          <mark key={segment.id} className={`highlight highlight-${segment.kind}`}>
+            {segment.text}
+          </mark>
+        ) : (
+          <span key={segment.id}>{segment.text}</span>
+        ),
+      )}
+    </div>
+  );
+}
+
+function ExpandableSection({ children, maxHeight = 160 }: { children: React.ReactNode; maxHeight?: number }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div style={{ position: "relative", marginTop: 16 }}>
+      <div style={{ maxHeight: expanded ? "none" : maxHeight, overflow: "hidden", position: "relative" }}>
+        {children}
+        {!expanded && (
+          <div style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "80px",
+            background: "linear-gradient(to bottom, transparent, var(--paper))",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            paddingBottom: "8px"
+          }}>
+            <button className="button-secondary" onClick={() => setExpanded(true)} type="button" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+              全文を表示する
+            </button>
+          </div>
+        )}
+      </div>
+      {expanded && (
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
+          <button className="button-secondary" onClick={() => setExpanded(false)} type="button">
+            折り返す
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Home() {
   const [rawText, setRawText] = useState(SAMPLE_TEXT);
@@ -148,7 +203,42 @@ export default function Home() {
         </section>
 
         <section className="panel">
-          <h2>2. AI分析</h2>
+          <h2>2. 変更点と全文プレビュー</h2>
+          <p>検出された危険情報と、テキストの全体像を確認できます。</p>
+          
+          <ExpandableSection maxHeight={220}>
+            <div style={{ display: "grid", gap: "24px" }}>
+              <div>
+                <h3>検出された危険情報一覧</h3>
+                <div className="risk-list" style={{ marginTop: 12 }}>
+                  {anonymized.risks.length === 0 ? (
+                    <div className="risk-item">
+                      <span>危険情報は検出されませんでした。</span>
+                    </div>
+                  ) : (
+                    anonymized.risks.map((risk) => (
+                      <div className="risk-item" key={risk.id}>
+                        <div>
+                          <div className="risk-kind">{risk.label}</div>
+                          <code>{risk.value}</code>
+                        </div>
+                        <div className="meta">→ {risk.replacement}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3>匿名化前テキスト（ハイライト）</h3>
+                <HighlightedText text={rawText} risks={anonymized.risks} />
+              </div>
+            </div>
+          </ExpandableSection>
+        </section>
+
+        <section className="panel">
+          <h2>3. AI分析</h2>
           <p>匿名化後のテキストのみAIに送信されます。消し漏れがないか確認してから実行してください。</p>
           <div className="analysis-box" style={{ marginTop: 16 }}>
             <div className="select">
