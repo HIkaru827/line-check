@@ -170,6 +170,36 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="tutorial-section">
+        <h2 className="tutorial-title">使い方・仕組み</h2>
+        <div className="tutorial-grid">
+          <div className="tutorial-step">
+            <div className="step-icon-wrapper">
+              📱
+              <div className="step-number">1</div>
+            </div>
+            <h3>LINEから履歴を保存</h3>
+            <p>LINEのトーク設定から「トーク履歴を送信」を選び、テキストファイル (.txt) を保存します。</p>
+          </div>
+          <div className="tutorial-step">
+            <div className="step-icon-wrapper">
+              🛡️
+              <div className="step-number">2</div>
+            </div>
+            <h3>自動でマスキング</h3>
+            <p>履歴をアップロードすると、強力な辞書で個人情報・地名・名前などが自動で匿名化されます。</p>
+          </div>
+          <div className="tutorial-step">
+            <div className="step-icon-wrapper">
+              ✨
+              <div className="step-number">3</div>
+            </div>
+            <h3>安心のAI分析</h3>
+            <p>元データではなく、マスキング済みの安全なテキストだけを使ってAIが関係性やムードを分析します。</p>
+          </div>
+        </div>
+      </section>
+
       <div className="grid">
         <section className="panel">
           <h2>1. アップロード</h2>
